@@ -1,8 +1,12 @@
 from flask import Flask, jsonify, request
 from inventory import inventory
+from flask_cors import CORS
 import requests
 
 app = Flask(__name__)
+
+CORS(app)
+
 
 # Home Route
 @app.route("/")
