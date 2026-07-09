@@ -217,7 +217,7 @@ function App() {
                     >
 
                         <p>
-                            {item.product_name}
+                            Name{item.name}
                         </p>
 
                         <p>
