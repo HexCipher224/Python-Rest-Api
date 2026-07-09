@@ -110,7 +110,7 @@ function App() {
 
             await fetch(
 
-                `http://127.0.0.1:5000/inventory/${id}`,
+                `https://python-rest-api-1.onrender.com/items/${id}`,
 
                 {
                     method: "DELETE"
@@ -143,26 +143,6 @@ function App() {
                     name="name"
                     placeholder="Product Name"
                     value={formData.name}
-                    onChange={handleChange}
-                />
-
-                <br /><br />
-
-                <input
-                    type="text"
-                    name="brand"
-                    placeholder="Brand"
-                    value={formData.brand}
-                    onChange={handleChange}
-                />
-
-                <br /><br />
-
-                <input
-                    type="text"
-                    name="brand"
-                    placeholder="Brand"
-                    value={formData.brand}
                     onChange={handleChange}
                 />
 
@@ -217,7 +197,7 @@ function App() {
                     >
 
                         <p>
-                            Name{item.name}
+                            <strong>Name: </strong>{item.name}
                         </p>
 
                         <p>
