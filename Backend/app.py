@@ -85,28 +85,37 @@ def delete_item(item_id):
 # Search OpenFoodFacts
 @app.route("/product/<barcode>", methods=["GET"])
 def get_product(barcode):
-    url = f"https://world.openfoodfacts.org/api/v0/product/{barcode}.json"
+    url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}"
+    
+    # OpenFoodFacts requires a custom User-Agent identifying your app
+    headers = {
+        "User-Agent": "InventoryApp - FlaskBackend - Version 1.0"
+    }
 
-    response = requests.get(url)
+    try:
+        response = requests.get(url, headers=headers, timeout=5)
 
-    if response.status_code != 200:
-        return jsonify({"error": "Unable to contact OpenFoodFacts"}), 500
+        if response.status_code != 200:
+            return jsonify({"error": "Unable to contact OpenFoodFacts"}), 502
 
-    data = response.json()
+        data = response.json()
 
-    if data.get("status") != 1:
-        return jsonify({"error": "Product not found"}), 404
+        # Check if product exists in their database
+        if data.get("status") != 1:
+            return jsonify({"error": "Product not found"}), 404
 
-    product = data["product"]
+        product = data.get("product", {})
 
-    return jsonify({
-        "barcode": barcode,
-        "name": product.get("product_name"),
-        "brand": product.get("brands"),
-        "category": product.get("categories"),
-        "quantity": product.get("quantity")
-    })
+        return jsonify({
+            "barcode": barcode,
+            "name": product.get("product_name", "Unknown"),
+            "brand": product.get("brands", "Unknown"),
+            "category": product.get("categories", "N/A"),
+            "quantity": product.get("quantity", "N/A")
+        }), 200
 
+    except requests.exceptions.RequestException:
+        return jsonify({"error": "External request timed out or failed"}), 504
 
 if __name__ == "__main__":
     app.run(debug=True)
