@@ -36,10 +36,17 @@ def get_item(item_id):
 # POST new item
 @app.route("/items", methods=["POST"])
 def add_item():
-    data = request.get_json()
+    data = request.get_json(silent=True)
+
+    # 1. Validation: Prevent crash if body is missing required fields
+    if not data or not all(k in data for k in ("name", "quantity", "price")):
+        return jsonify({"error": "Invalid payload. 'name', 'quantity', and 'price' are required."}), 400
+
+    # 2. Dynamic ID: Prevent duplicate IDs when items get deleted
+    new_id = max([item["id"] for item in inventory], default=0) + 1
 
     new_item = {
-        "id": len(inventory) + 1,
+        "id": new_id,
         "name": data["name"],
         "quantity": data["quantity"],
         "price": data["price"]
@@ -49,11 +56,11 @@ def add_item():
 
     return jsonify(new_item), 201
 
-
 # PATCH item
 @app.route("/items/<int:item_id>", methods=["PATCH"])
 def update_item(item_id):
-    data = request.get_json()
+    # Fallback to an empty dictionary {} if body is missing or invalid JSON
+    data = request.get_json(silent=True) or {}
 
     for item in inventory:
         if item["id"] == item_id:
@@ -65,19 +72,15 @@ def update_item(item_id):
 
     return jsonify({"error": "Item not found"}), 404
 
-
 # DELETE item
 @app.route("/items/<int:item_id>", methods=["DELETE"])
 def delete_item(item_id):
-    global inventory
-
     for item in inventory:
         if item["id"] == item_id:
             inventory.remove(item)
-            return jsonify({"message": "Item deleted"}), 200
+            return jsonify({"message": f"Item {item_id} deleted successfully"}), 200
 
     return jsonify({"error": "Item not found"}), 404
-
 
 # Search OpenFoodFacts
 @app.route("/product/<barcode>", methods=["GET"])
